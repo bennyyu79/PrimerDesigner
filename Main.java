@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 
 public class Main {
 
+    //test
+
     private static final double version = 0.1;
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
