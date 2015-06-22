@@ -25,6 +25,7 @@ public class Primer3 {
     private int maxPrimerDistance, padding;
     private File primer3FilePath, primerMisprimingLibrary, primer3Settings;
     private GenomicLocation targetLocation;
+    private String primerThermodynamicPararmetersPath;
 
     //TODO: ligate M13 adapters
     //TODO: Re-calculate primer hairpin with M13 adapter
@@ -35,7 +36,8 @@ public class Primer3 {
                    int maxPrimerDistance,
                    File primer3FilePath,
                    File primerMisprimingLibrary,
-                   File primer3Settings) {
+                   File primer3Settings,
+                   String primerThermodynamicPararmetersPath) {
 
         this.referenceSequence = referenceSequence;
         this.targetLocation = targetLocation;
@@ -44,7 +46,7 @@ public class Primer3 {
         this.primer3FilePath = primer3FilePath;
         this.primerMisprimingLibrary = primerMisprimingLibrary;
         this.primer3Settings = primer3Settings;
-
+        this.primerThermodynamicPararmetersPath = primerThermodynamicPararmetersPath;
     }
 
     public void callPrimer3(){
@@ -57,6 +59,7 @@ public class Primer3 {
         primer3input.append("SEQUENCE_TARGET=" + (padding + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1) + "\n");
         primer3input.append("SEQUENCE_EXCLUDED_REGION=" + excludedRegions.toString() + "\n");
         primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + primerMisprimingLibrary + "\n");
+        primer3input.append("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=" + primerThermodynamicPararmetersPath + "\n");
         primer3input.append("PRIMER_EXPLAIN_FLAG=1\n");
         primer3input.append("=");
 
@@ -65,15 +68,15 @@ public class Primer3 {
 
             if (Configuration.isDebug()){
                 exeBuilder = new ProcessBuilder(
-                        primer3FilePath,
-                        "-p3_settings_file=" + ,
+                        primer3FilePath.toString(),
+                        "-p3_settings_file=" + primer3Settings.getAbsolutePath(),
                         "-echo_settings_file",
                         "-format_output"
                 );
             } else {
                 exeBuilder = new ProcessBuilder(
-                        primer3RootFilePath + "/primer3_core",
-                        "-p3_settings_file=" + primer3RootFilePath + "/primer3_settings.txt",
+                        primer3FilePath.toString(),
+                        "-p3_settings_file=" + primer3Settings.getAbsolutePath(),
                         "-echo_settings_file"
                 );
             }

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class Main {
 
-    private static final double version = 0.1;
+    private static final double version = 0.2;
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
@@ -26,6 +26,7 @@ public class Main {
         if (Configuration.isDebug()) log.log(Level.INFO, "Debugging mode");
 
         boolean hasAmpliconInDB;
+        int n;
         StringBuilder output = new StringBuilder();
         StringBuilder bedOutput = new StringBuilder();
 
@@ -106,9 +107,7 @@ public class Main {
                     //split target
                     if ((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1 > Configuration.getMaxTargetLength()){
 
-                        int numberOfWindows = ((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1 / Configuration.getMaxTargetLength() + 1);
-                        System.out.println(numberOfWindows);System.exit(0);
-
+                        int numberOfWindows = (((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1) / Configuration.getMaxTargetLength()) + 1;
 
                         log.log(Level.WARNING, "Target " + finalROI.getChromosome() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition() + " exceeds max target length. Splitting into " + numberOfWindows + " fragments");
 
@@ -126,6 +125,9 @@ public class Main {
                 //exonic and split ROIs
                 for (GenomicLocation finalROI : splitFinalRegionsOfInterest) {
 
+                    //pair number
+                    n = 0;
+
                     //convert to 1-based
                     finalROI.convertTo1Based();
 
@@ -142,13 +144,16 @@ public class Main {
 
                     //design primers
                     Primer3 primer3 = new Primer3(
-                            sequence.getReferenceSequence(),
+                            sequence,
                             finalROI,
                             Configuration.getPadding(),
                             Configuration.getMaxPrimerDistance(),
-                            Configuration.getPrimer3FilePath()
+                            Configuration.getPrimer3FilePath(),
+                            Configuration.getPrimerMisprimingLibrary(),
+                            Configuration.getPrimer3Settings(),
+                            Configuration.getPrimerThermodynamicPararmetersPath()
                     );
-                    primer3.setExcludedRegions(Configuration.getExcludedVariants(), Configuration.getMaxIndelExclusionLength());
+                    primer3.setExcludedRegions(Configuration.getExcludedVariants(), Configuration.getMaxIndelLength());
                     primer3.callPrimer3();
 
                     if (Configuration.isDebug()){
@@ -172,10 +177,11 @@ public class Main {
                             output.append(roi.getChromosome() + "\t");
                             output.append(roi.getStartPosition() + "\t");
                             output.append(roi.getEndPosition() + "\t");
-                            output.append("\n");
+                            output.append(roi.getName() + "\n");
                         }
 
                         for (PrimerPair primerPair : primer3.getFilteredPrimerPairs()){
+                            ++n;
 
                             //print primers to table
 
@@ -183,7 +189,7 @@ public class Main {
                             output.append(roi.getChromosome() + "\t");
                             output.append(roi.getStartPosition() + "\t");
                             output.append(roi.getEndPosition() + "\t");
-                            output.append(roi.getName() + "\t");
+                            output.append(roi.getName() + "_" + n + "\t");
 
                             //print design info
                             output.append(finalROI.getStartPosition() + "\t");
@@ -200,18 +206,17 @@ public class Main {
                             //print amplicon coordinates
                             output.append(primerPair.getAmplifiableRegion().getStartPosition() + "\t");
                             output.append(primerPair.getAmplifiableRegion().getEndPosition() + "\t");
-
                             output.append("\n");
 
                             //print primers to bed
                             bedOutput.append(roi.getChromosome() + "\t");
-                            bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length() - 1) + "\t");
+                            bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1 + "\t");
                             bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()) + "\t");
-                            bedOutput.append(roi.getName() + "\t");
+                            bedOutput.append(roi.getName() + "_" + n +  "\t");
                             bedOutput.append(Math.round(primerPair.getPairPenalty()) + "\t");
-                            if (primerPair.getAmplifiableRegion().getStrand() == 1) bedOutput.append("+"); else bedOutput.append("-");
-                            bedOutput.append(primerPair.getAmplifiableRegion().getStartPosition() - 1 + "\t");
-                            bedOutput.append(primerPair.getAmplifiableRegion().getEndPosition() + "\t");
+                            if (primerPair.getAmplifiableRegion().getStrand() == 1) bedOutput.append("+\t"); else bedOutput.append("-\t");
+                            bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - 1) + "\t");
+                            bedOutput.append(primerPair.getAmplifiableRegion().getEndPosition());
                             bedOutput.append("\n");
 
                         }
