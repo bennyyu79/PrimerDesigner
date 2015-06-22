@@ -14,7 +14,7 @@ public class BedtoolsWrapper {
 
     private static final Logger log = Logger.getLogger(BedtoolsWrapper.class.getName());
 
-    public static ArrayList<String> getOverlappingFeatures(File bedtoolsFilePath, File bedFile, GenomicLocation lookup){
+    public static ArrayList<String> getOverlappingFeatures(File bedtoolsFilePath, File bedFilePath, GenomicLocation lookup){
 
         StringBuilder targetBedInput = new StringBuilder();
         ArrayList<String> bedtoolsOutput = new ArrayList<>();
@@ -35,7 +35,7 @@ public class BedtoolsWrapper {
                     "-a",
                     "-",
                     "-b",
-                    bedFile.toString(),
+                    bedFilePath.toString(),
                     "-wo"
             );
 
@@ -56,7 +56,7 @@ public class BedtoolsWrapper {
             }
 
             if (process.waitFor() != 0){
-                throw new RuntimeException("Problem invoking Bedtools Intersect, exit code: " + process.exitValue());
+                throw new RuntimeException("Problem invoking bedtools intersect, exit code: " + process.exitValue());
             }
 
         } catch (IOException e){
@@ -108,7 +108,7 @@ public class BedtoolsWrapper {
             }
 
             if (process.waitFor() != 0){
-                throw new RuntimeException("Problem invoking Bedtools Merge, exit code: " + process.exitValue());
+                throw new RuntimeException("Problem invoking bedtools merge, exit code: " + process.exitValue());
             }
 
         } catch (IOException e){
@@ -170,7 +170,7 @@ public class BedtoolsWrapper {
             }
 
             if (process.waitFor() != 0){
-                throw new RuntimeException("Problem invoking Bedtools makewindows, exit code: " + process.exitValue());
+                throw new RuntimeException("Problem invoking bedtools makewindows, exit code: " + process.exitValue());
             }
 
         } catch (IOException e){

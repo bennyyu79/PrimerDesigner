@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 /**
  * Created by ml on 04/06/15.
  */
-public class PrimerDatabase { //TODO: link to actual primer database
+public class PrimerDatabase { //TODO: link to actual primer database: placeholder
 
     private static final Logger log = Logger.getLogger(PrimerDatabase.class.getName());
 

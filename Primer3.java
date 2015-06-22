@@ -16,33 +16,35 @@ public class Primer3 {
 
     private static final Logger log = Logger.getLogger(Primer3.class.getName());
 
-    private String referenceSequence;
+    private ReferenceSequence referenceSequence;
     private ArrayList<PrimerPair> candidatePrimerPairs = new ArrayList<>();
     private ArrayList<PrimerPair> filteredPrimerPairs = new ArrayList<>();
     private ArrayList<String> primer3Output = new ArrayList<>();
     private StringBuilder excludedRegions = new StringBuilder();
     private HashMap<String, ArrayList<GenomicLocation>> primerAlignments = new HashMap<>();
-    private int maxPrimerDistance, padding, maxIndelLength;
-    private File primer3RootFilePath;
-    private File vcfFilePath;
+    private int maxPrimerDistance, padding;
+    private File primer3FilePath, primerMisprimingLibrary, primer3Settings;
     private GenomicLocation targetLocation;
 
+    //TODO: ligate M13 adapters
     //TODO: Re-calculate primer hairpin with M13 adapter
 
-    public Primer3(String referenceSequence,
+    public Primer3(ReferenceSequence referenceSequence,
                    GenomicLocation targetLocation,
                    int padding,
                    int maxPrimerDistance,
-                   int maxIndelLength,
-                   File primer3RootFilePath,
-                   File vcfFilePath) {
+                   File primer3FilePath,
+                   File primerMisprimingLibrary,
+                   File primer3Settings) {
+
         this.referenceSequence = referenceSequence;
         this.targetLocation = targetLocation;
         this.padding = padding;
         this.maxPrimerDistance = maxPrimerDistance;
-        this.maxIndelLength = maxIndelLength;
-        this.primer3RootFilePath = primer3RootFilePath;
-        this.vcfFilePath = vcfFilePath;
+        this.primer3FilePath = primer3FilePath;
+        this.primerMisprimingLibrary = primerMisprimingLibrary;
+        this.primer3Settings = primer3Settings;
+
     }
 
     public void callPrimer3(){
@@ -51,10 +53,10 @@ public class Primer3 {
 
         StringBuilder primer3input = new StringBuilder();
 
-        primer3input.append("SEQUENCE_TEMPLATE=" + referenceSequence + "\n");
+        primer3input.append("SEQUENCE_TEMPLATE=" + referenceSequence.getReferenceSequence() + "\n");
         primer3input.append("SEQUENCE_TARGET=" + (padding + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1) + "\n");
         primer3input.append("SEQUENCE_EXCLUDED_REGION=" + excludedRegions.toString() + "\n");
-        primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + primer3RootFilePath + "/humrep_and_simple.txt\n");
+        primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + primerMisprimingLibrary + "\n");
         primer3input.append("PRIMER_EXPLAIN_FLAG=1\n");
         primer3input.append("=");
 
@@ -63,8 +65,8 @@ public class Primer3 {
 
             if (Configuration.isDebug()){
                 exeBuilder = new ProcessBuilder(
-                        primer3RootFilePath + "/primer3_core",
-                        "-p3_settings_file=" + primer3RootFilePath + "/primer3_settings.txt",
+                        primer3FilePath,
+                        "-p3_settings_file=" + ,
                         "-echo_settings_file",
                         "-format_output"
                 );
@@ -288,7 +290,7 @@ public class Primer3 {
 
     }
 
-    public void setExcludedRegions(){
+    public void setExcludedRegions(File vcfFilePath, int maxIndelLength){
 
         //get nearby dbSNP entries
         VCFFileReader vcfFile = new VCFFileReader(vcfFilePath, new File(vcfFilePath + ".idx"));

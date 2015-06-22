@@ -17,8 +17,8 @@ public class Main {
 
     public static void main(String[] args) {
 
-        if (args.length != 4) {
-            System.err.println("Usage: <ReferenceSequence> <ExcludedVariants> <Exons> <RegionOfInterest>");
+        if (args.length != 1) {
+            System.err.println("Usage: <RegionOfInterest.bed>");
             System.exit(1);
         }
 
@@ -33,7 +33,7 @@ public class Main {
         output.append("SuppliedTargetChr\tSuppliedTargetStart\tSuppliedTargetEnd\tSuppliedName\tDesignStart\tDesignEnd\tLeftPrimer\tRightPrimer\tLeftTm\tRightTm\tDesignPenalty\tSize\tAmpliconStart\tAmpliconEnd\n");
 
         //read regions of interest BED
-        try (AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(args[3], new BEDCodec(BEDCodec.StartOffset.ZERO), false)){
+        try (AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(args[0], new BEDCodec(BEDCodec.StartOffset.ZERO), false)){
             Iterable<BEDFeature> iter = reader.iterator();
 
             //loop over regions of interest
@@ -75,7 +75,7 @@ public class Main {
 
                 //find overlapping regions of interest with exons
                 HashSet<GenomicLocation> exonicRegions = new HashSet<>();
-                for (String line : BedtoolsWrapper.getOverlappingFeatures(Configuration.getBedtoolsFilePath(), new File(args[2]), roi)){
+                for (String line : BedtoolsWrapper.getOverlappingFeatures(Configuration.getBedtoolsFilePath(), Configuration.getExonsBed(), roi)){
 
                     String[] fields = line.split("\t");
                     exonicRegions.add(new GenomicLocation(fields[3], Integer.parseInt(fields[4]) - Configuration.getSpliceSitePadding(), Integer.parseInt(fields[5]) + Configuration.getSpliceSitePadding())); //splice site padding added
@@ -132,7 +132,7 @@ public class Main {
                     log.log(Level.INFO, "Designing amplicon for target " + finalROI.getChromosome() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
 
                     //get sequence
-                    ReferenceSequence sequence = new ReferenceSequence(finalROI, new File(args[0]), new File(args[0] + ".fai"), Configuration.getPadding());
+                    ReferenceSequence sequence = new ReferenceSequence(finalROI, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
                     sequence.populateReferenceSequence();
 
                     if (sequence.isRefAllNSites()) {
@@ -146,11 +146,9 @@ public class Main {
                             finalROI,
                             Configuration.getPadding(),
                             Configuration.getMaxPrimerDistance(),
-                            Configuration.getMaxIndelExclusionLength(),
-                            Configuration.getPrimer3RootFilePath(),
-                            new File(args[1])
+                            Configuration.getPrimer3FilePath()
                     );
-                    primer3.setExcludedRegions();
+                    primer3.setExcludedRegions(Configuration.getExcludedVariants(), Configuration.getMaxIndelExclusionLength());
                     primer3.callPrimer3();
 
                     if (Configuration.isDebug()){
@@ -223,7 +221,7 @@ public class Main {
                 }
 
                 if (!Configuration.isDebug()){
-                    ReferenceSequence paddedSequence = new ReferenceSequence(roi, new File (args[0]), new File (args[0] + ".fai"), Configuration.getPadding());
+                    ReferenceSequence paddedSequence = new ReferenceSequence(roi, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
                     paddedSequence.populateReferenceSequence();
 
                     MutationSurveyorReference mutationSurveyorReference = new MutationSurveyorReference(roi, paddedSequence, Configuration.getPadding());

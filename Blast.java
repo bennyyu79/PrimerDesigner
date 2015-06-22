@@ -48,7 +48,7 @@ public class Blast {
             }
 
             if (process.waitFor() != 0){
-                throw new RuntimeException("Problem invoking Blast, exit code: " + process.exitValue());
+                throw new RuntimeException("Problem invoking blastn-short, exit code: " + process.exitValue());
             }
 
         } catch (IOException e){
