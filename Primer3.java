@@ -197,13 +197,20 @@ public class Primer3 {
             hasCorrectAlignment = false;
             alignments = 0;
 
-            //blast primers if not already done
-            if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getLeftSequence())){
-                primerAlignments.put(candidatePrimerPairs.get(j).getLeftSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getLeftSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath()));
-            }
+            try {
 
-            if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getRightSequence())){
-                primerAlignments.put(candidatePrimerPairs.get(j).getRightSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getRightSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath()));
+                //blast primers if not already done
+                if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getLeftSequence())){
+                    primerAlignments.put(candidatePrimerPairs.get(j).getLeftSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getLeftSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath(), Configuration.getMaxExactMatches(), Configuration.getMinSimilarity()));
+                }
+
+                if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getRightSequence())){
+                    primerAlignments.put(candidatePrimerPairs.get(j).getRightSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getRightSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath(), Configuration.getMaxExactMatches(), Configuration.getMinSimilarity()));
+                }
+
+            } catch (MaxAlignmentExceededException e){
+                log.log(Level.INFO, "Skipping pair: " + e.getMessage());
+                continue;
             }
 
             //loop over all primer alignments for this pair

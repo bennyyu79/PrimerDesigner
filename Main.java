@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO Make splitting framgents configurable
+
 public class Main {
 
     private static final double version = 0.2;
@@ -31,7 +33,7 @@ public class Main {
         StringBuilder bedOutput = new StringBuilder();
 
         //write headers
-        output.append("SuppliedTargetChr\tSuppliedTargetStart\tSuppliedTargetEnd\tSuppliedName\tDesignStart\tDesignEnd\tLeftPrimer\tRightPrimer\tLeftTm\tRightTm\tDesignPenalty\tSize\tAmpliconStart\tAmpliconEnd\n");
+        output.append("SuppliedTargetChr\tSuppliedTargetStart\tSuppliedTargetEnd\tSuppliedName\tDesignStart\tDesignEnd\tLeftPrimer\tRightPrimer\tLeftTm\tRightTm\tDesignPenalty\tProduct Size\tAssayStart (excl primer)\tAssayEnd (excl primer)\n");
 
         //read regions of interest BED
         try (AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(args[0], new BEDCodec(BEDCodec.StartOffset.ZERO), false)){
@@ -79,7 +81,7 @@ public class Main {
                 for (String line : BedtoolsWrapper.getOverlappingFeatures(Configuration.getBedtoolsFilePath(), Configuration.getExonsBed(), roi)){
 
                     String[] fields = line.split("\t");
-                    exonicRegions.add(new GenomicLocation(fields[3], Integer.parseInt(fields[4]) - Configuration.getSpliceSitePadding(), Integer.parseInt(fields[5]) + Configuration.getSpliceSitePadding())); //splice site padding added
+                    exonicRegions.add(new GenomicLocation(fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5])));
 
                     log.log(Level.INFO, "Target overlaps with exon " + fields[3] + ":" + fields[4] + "-" + fields[5]);
                 }
@@ -171,6 +173,8 @@ public class Main {
 
                         primer3.splitPrimer3Output();
                         primer3.checkPrimerAlignments();
+
+                        roi.convertTo1Based();
 
                         //no design available
                         if (primer3.getFilteredPrimerPairs().size() == 0){

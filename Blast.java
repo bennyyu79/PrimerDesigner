@@ -14,10 +14,12 @@ public class Blast {
 
     private static final Logger log = Logger.getLogger(Blast.class.getName());
 
-    public static ArrayList<GenomicLocation> callShortQueryBlast(String query, File blastnFilePath, File blastnRefPath){
+    public static ArrayList<GenomicLocation> callShortQueryBlast(String query, File blastnFilePath, File blastnRefPath, int maxExactMatches, double minSimilarity) throws MaxAlignmentExceededException {
 
         log.log(Level.FINE, "Calling short query blast ...");
         log.log(Level.FINE, "Sequence: " + query);
+
+        int numberExactAlignments = 0;
 
         ArrayList<String> output = new ArrayList<>();
         ArrayList<GenomicLocation> alignments = new ArrayList<>();
@@ -61,8 +63,19 @@ public class Blast {
 
         //extract genome coordinates from blast output
         for (String s : output){
+
             String[] fields = s.split("\t");
             alignments.add(new GenomicLocation(fields[1], Integer.parseInt(fields[8]), Integer.parseInt(fields[9])));
+
+            if (fields[2].equals("100.00") && (double) Integer.parseInt(fields[3]) / query.length() >= minSimilarity){
+                numberExactAlignments++;
+            }
+
+        }
+
+        //throw error if too many alignemtns are identified
+        if (numberExactAlignments > maxExactMatches){
+            throw new MaxAlignmentExceededException("Sequence " + query + " has too many alignments (" + numberExactAlignments + ")");
         }
 
         return alignments;
