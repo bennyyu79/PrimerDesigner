@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //TODO Make splitting framgents configurable
+//TODO fix start pos bug
 
 public class Main {
 
