@@ -291,6 +291,7 @@ public class Primer3 {
             } else {
                 if (alignments == 1){
                     filteredPrimerPairs.add(candidatePrimerPairs.get(j));
+                    break; //only deliver one good primer pair
                 } else {
                     log.log(Level.INFO, "Could not find specific alignment for: " + (j + 1));
                 }

@@ -1,5 +1,6 @@
 package nhs.genetics.cardiff;
 
+import com.google.gson.Gson;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.bed.BEDCodec;
 import htsjdk.tribble.bed.BEDFeature;
@@ -11,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //TODO Make splitting framgents configurable
-//TODO fix start pos bug
 
 public class Main {
 
@@ -28,13 +28,10 @@ public class Main {
         log.log(Level.INFO, "Primer designer v" + version);
         if (Configuration.isDebug()) log.log(Level.INFO, "Debugging mode");
 
-        boolean hasAmpliconInDB;
         int n;
-        StringBuilder output = new StringBuilder();
         StringBuilder bedOutput = new StringBuilder();
-
-        //write headers
-        output.append("SuppliedTargetChr\tSuppliedTargetStart\tSuppliedTargetEnd\tSuppliedName\tDesignStart\tDesignEnd\tLeftPrimer\tRightPrimer\tLeftTm\tRightTm\tDesignPenalty\tProduct Size\tAssayStart (excl primer)\tAssayEnd (excl primer)\n");
+        Output output = new Output();
+        Gson gson = new Gson();
 
         //read regions of interest BED
         try (AbstractFeatureReader reader = AbstractFeatureReader.getFeatureReader(args[0], new BEDCodec(BEDCodec.StartOffset.ZERO), false)){
@@ -46,36 +43,6 @@ public class Main {
                 log.log(Level.INFO, "Designing primer pair to cover supplied region of interest " + feature.getName() + " " + feature.getContig() + ":" + feature.getStart() + "-" + feature.getEnd());
 
                 GenomicLocation roi = new GenomicLocation(feature.getContig(), feature.getStart(), feature.getEnd(), feature.getName());
-                hasAmpliconInDB = false;
-
-                //lookup roi in primer database; print amplicon(s) if exist
-                for (GenomicLocation inHouseAmplicon : PrimerDatabase.isROICoveredByAmplicon(Configuration.getBedtoolsFilePath(), Configuration.getPrimerDatabaseFile(), roi)){
-
-                    log.log(Level.INFO, "Target is already covered by amplicon(s) in primer database");
-
-                    //write to temp
-                    output.append(roi.getChromosome());
-                    output.append("\t");
-                    output.append(roi.getStartPosition());
-                    output.append("\t");
-                    output.append(roi.getEndPosition());
-                    output.append("\t\t\t\t\t\t");
-                    output.append(inHouseAmplicon.getEndPosition() - inHouseAmplicon.getStartPosition());
-                    output.append("\t");
-                    output.append(inHouseAmplicon.getChromosome());
-                    output.append("\t");
-                    output.append(inHouseAmplicon.getStartPosition());
-                    output.append("\t");
-                    output.append(inHouseAmplicon.getEndPosition());
-                    output.append("\t");
-                    output.append(inHouseAmplicon.getName());
-                    output.append("\n");
-
-                    hasAmpliconInDB = true;
-                }
-
-                //skip design if amplicon already exists
-                if (hasAmpliconInDB) continue;
 
                 //find overlapping regions of interest with exons
                 HashSet<GenomicLocation> exonicRegions = new HashSet<>();
@@ -177,47 +144,24 @@ public class Main {
 
                         roi.convertTo1Based();
 
-                        //no design available
-                        if (primer3.getFilteredPrimerPairs().size() == 0){
-                            output.append(roi.getChromosome() + "\t");
-                            output.append(roi.getStartPosition() + "\t");
-                            output.append(roi.getEndPosition() + "\t");
-                            output.append(roi.getName() + "\n");
-                        }
-
                         for (PrimerPair primerPair : primer3.getFilteredPrimerPairs()){
                             ++n;
 
-                            //print primers to table
-
-                            //print target info
-                            output.append(roi.getChromosome() + "\t");
-                            output.append(roi.getStartPosition() + "\t");
-                            output.append(roi.getEndPosition() + "\t");
-                            output.append(roi.getName() + "_" + n + "\t");
-
-                            //print design info
-                            output.append(finalROI.getStartPosition() + "\t");
-                            output.append(finalROI.getEndPosition() + "\t");
-
-                            //print primers
-                            output.append(primerPair.getLeftSequence() + "\t");
-                            output.append(primerPair.getRightSequence() + "\t");
-                            output.append(primerPair.getLeftTm() + "\t");
-                            output.append(primerPair.getRightTm() + "\t");
-                            output.append(primerPair.getPairPenalty() + "\t");
-                            output.append(primerPair.getProductSize() + "\t");
-
-                            //print amplicon coordinates
-                            output.append(primerPair.getAmplifiableRegion().getStartPosition() + "\t");
-                            output.append(primerPair.getAmplifiableRegion().getEndPosition() + "\t");
-                            output.append("\n");
+                            //print primers to JSON
+                            output.setChromosome(primerPair.getAmplifiableRegion().getChromosome());
+                            output.setStartPosition(primerPair.getAmplifiableRegion().getStartPosition());
+                            output.setEndPosition(primerPair.getAmplifiableRegion().getEndPosition());
+                            output.setLeftSequence(primerPair.getLeftSequence());
+                            output.setRightSequence(primerPair.getRightSequence());
+                            output.setLeftTm(primerPair.getLeftTm());
+                            output.setRightTm(primerPair.getRightTm());
+                            output.setRightTm(primerPair.getPairPenalty());
 
                             //print primers to bed
                             bedOutput.append(roi.getChromosome() + "\t");
                             bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1 + "\t");
                             bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()) + "\t");
-                            bedOutput.append(roi.getName() + "_" + n +  "\t");
+                            bedOutput.append("\t");
                             bedOutput.append(Math.round(primerPair.getPairPenalty()) + "\t");
                             if (primerPair.getAmplifiableRegion().getStrand() == 1) bedOutput.append("+\t"); else bedOutput.append("-\t");
                             bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - 1) + "\t");
@@ -247,15 +191,10 @@ public class Main {
 
         if (!Configuration.isDebug()){
 
-            //print primer pairs
-            try (PrintWriter p = new PrintWriter("Primers.txt")){
-                p.print(output.toString());
-                p.close();
-            } catch (IOException e){
-                log.log(Level.SEVERE, e.toString());
-            }
+            //write output to stdout
+            System.out.print(gson.toJson(output));
 
-            //print primer pairs
+            //print primer pairs to BED
             try (PrintWriter p = new PrintWriter("Primers.bed")){
                 p.print(bedOutput.toString());
                 p.close();
