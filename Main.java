@@ -155,7 +155,6 @@ public class Main {
                             output.setRightSequence(primerPair.getRightSequence());
                             output.setLeftTm(primerPair.getLeftTm());
                             output.setRightTm(primerPair.getRightTm());
-                            output.setRightTm(primerPair.getPairPenalty());
 
                             //print primers to bed
                             bedOutput.append(roi.getChromosome() + "\t");
@@ -175,11 +174,11 @@ public class Main {
                 }
 
                 if (!Configuration.isDebug()){
-                    ReferenceSequence paddedSequence = new ReferenceSequence(roi, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
+                    /*ReferenceSequence paddedSequence = new ReferenceSequence(roi, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
                     paddedSequence.populateReferenceSequence();
 
                     MutationSurveyorReference mutationSurveyorReference = new MutationSurveyorReference(roi, paddedSequence, Configuration.getPadding());
-                    mutationSurveyorReference.writeMutationSurveyorSeqFile();
+                    mutationSurveyorReference.writeMutationSurveyorSeqFile();*/
                 }
 
             }// done reading supplied ROIs
@@ -194,13 +193,13 @@ public class Main {
             //write output to stdout
             System.out.print(gson.toJson(output));
 
-            //print primer pairs to BED
+            /*print primer pairs to BED
             try (PrintWriter p = new PrintWriter("Primers.bed")){
                 p.print(bedOutput.toString());
                 p.close();
             } catch (IOException e){
                 log.log(Level.SEVERE, e.toString());
-            }
+            }*/
 
         }
 
