@@ -77,14 +77,16 @@ public class Main {
                     //split target
                     if ((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1 > Configuration.getMaxTargetLength()){
 
-                        int numberOfWindows = (((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1) / Configuration.getMaxTargetLength()) + 1;
+                        /*int numberOfWindows = (((finalROI.getEndPosition() - finalROI.getStartPosition()) + 1) / Configuration.getMaxTargetLength()) + 1;
 
                         log.log(Level.WARNING, "Target " + finalROI.getChromosome() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition() + " exceeds max target length. Splitting into " + numberOfWindows + " fragments");
 
                         for (String line : BedtoolsWrapper.splitRegionIntoWindows(Configuration.getBedtoolsFilePath(), finalROI, numberOfWindows)){
                             String[] fields = line.split("\t");
                             splitFinalRegionsOfInterest.add(new GenomicLocation(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2])));
-                        }
+                        }*/
+
+                        splitFinalRegionsOfInterest.add(roi);
 
                     } else {
                         splitFinalRegionsOfInterest.add(finalROI);
