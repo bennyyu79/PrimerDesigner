@@ -7,7 +7,7 @@ public class Output {
 
     private String chromosome, leftSequence, rightSequence;
     private int startPosition, endPosition;
-    private double leftTm,rightTm, pairPenalty;
+    private double leftTm,rightTm;
 
     public Output(){
 
