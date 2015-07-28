@@ -17,7 +17,7 @@ public class Main {
 
         if (args.length != 3) {
             System.err.println("Usage: <Chrom> <Start> <Stop>");
-            System.err.println("Coordinates should be 0-based");
+            System.err.println("Coordinates should be 1-based");
             System.exit(1);
         }
 
@@ -28,6 +28,7 @@ public class Main {
         Output output = new Output();
         Gson gson = new Gson();
         GenomicLocation suppliedROI = new GenomicLocation(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+        suppliedROI.convertTo0Based();
         HashSet<GenomicLocation> overlappingExonicRegionsOfInterest = new HashSet<>();
         HashSet<GenomicLocation> mergedOverlappingExonicRegionsOfInterest = new HashSet<>();
         ArrayList<GenomicLocation> splitFinalRegionsOfInterest = new ArrayList<>();
