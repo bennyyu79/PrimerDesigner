@@ -1,6 +1,9 @@
 package nhs.genetics.cardiff;
 
+import com.sun.tools.javac.jvm.Gen;
+
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -69,7 +72,7 @@ public class BedtoolsWrapper {
 
         return  bedtoolsOutput;
     }
-    public static HashSet<GenomicLocation> mergeOverlappingFeatures(File bedtoolsFilePath, HashSet<GenomicLocation> features){
+    public static HashSet<GenomicLocation> mergeOverlappingFeatures(File bedtoolsFilePath, ArrayList<GenomicLocation> features){
 
         HashSet<GenomicLocation> mergedFeatures = new HashSet<>();
         ArrayList<String> bedtoolsOutput = new ArrayList<>();

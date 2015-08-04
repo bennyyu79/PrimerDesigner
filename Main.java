@@ -29,7 +29,7 @@ public class Main {
         Gson gson = new Gson();
         GenomicLocation suppliedROI = new GenomicLocation(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         suppliedROI.convertTo0Based();
-        HashSet<GenomicLocation> overlappingExonicRegionsOfInterest = new HashSet<>();
+        ArrayList<GenomicLocation> overlappingExonicRegionsOfInterest = new ArrayList<>();
         HashSet<GenomicLocation> mergedOverlappingExonicRegionsOfInterest = new HashSet<>();
         ArrayList<GenomicLocation> splitFinalRegionsOfInterest = new ArrayList<>();
 
