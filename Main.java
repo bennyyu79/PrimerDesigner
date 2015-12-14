@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class Main {
 
-    private static final double version = 0.3;
+    private static final double version = 0.4;
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
@@ -33,7 +33,7 @@ public class Main {
         HashSet<GenomicLocation> mergedOverlappingExonicRegionsOfInterest = new HashSet<>();
         ArrayList<GenomicLocation> splitFinalRegionsOfInterest = new ArrayList<>();
 
-        log.log(Level.INFO, "Designing primer pair to cover supplied region of interest " + suppliedROI.getChromosome() + ":" + suppliedROI.getStartPosition() + "-" + suppliedROI.getEndPosition());
+        log.log(Level.INFO, "Designing primer pair to cover supplied region of interest " + suppliedROI.getContig() + ":" + suppliedROI.getStartPosition() + "-" + suppliedROI.getEndPosition());
 
         //find overlapping exons with ROI
         for (String feature : BedtoolsWrapper.getOverlappingFeatures(Configuration.getBedtoolsFilePath(), Configuration.getExonsBed(), suppliedROI)){
@@ -52,7 +52,7 @@ public class Main {
 
                 mergedOverlappingExonicRegionsOfInterest.add(mergedOverlappingExonicROI);
 
-                log.log(Level.INFO, "Exonic target(s) were merged into " + mergedOverlappingExonicROI.getChromosome() + ":" + mergedOverlappingExonicROI.getStartPosition() + "-" + mergedOverlappingExonicROI.getEndPosition());
+                log.log(Level.INFO, "Exonic target(s) were merged into " + mergedOverlappingExonicROI.getContig() + ":" + mergedOverlappingExonicROI.getStartPosition() + "-" + mergedOverlappingExonicROI.getEndPosition());
             }
 
         } else {
@@ -90,14 +90,14 @@ public class Main {
             //convert to 1-based
             finalROI.convertTo1Based();
 
-            log.log(Level.INFO, "Designing amplicon for target " + finalROI.getChromosome() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
+            log.log(Level.INFO, "Designing amplicon for target " + finalROI.getContig() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
 
             //get sequence
             ReferenceSequence sequence = new ReferenceSequence(finalROI, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
             sequence.populateReferenceSequence();
 
             if (sequence.isRefAllNSites()) {
-                log.log(Level.WARNING, "Could not design primer for target containing all N-sites: " + finalROI.getChromosome() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
+                log.log(Level.WARNING, "Could not design primer for target containing all N-sites: " + finalROI.getContig() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
                 break;
             }
 
@@ -116,7 +116,7 @@ public class Main {
             primer3.callPrimer3();
 
             if (Configuration.isDebug()){
-                try (PrintWriter p = new PrintWriter(finalROI.getChromosome() + "_" + finalROI.getStartPosition() + "_" + finalROI.getEndPosition() + "_primer3out.txt")) {
+                try (PrintWriter p = new PrintWriter(finalROI.getContig() + "_" + finalROI.getStartPosition() + "_" + finalROI.getEndPosition() + "_primer3out.txt")) {
                     for (String line : primer3.getPrimer3Output()) {
                         p.println(line);
                     }
@@ -136,7 +136,7 @@ public class Main {
                 for (PrimerPair primerPair : primer3.getFilteredPrimerPairs()){
 
                     //print primers to JSON
-                    output.setChromosome(primerPair.getAmplifiableRegion().getChromosome());
+                    output.setChromosome(primerPair.getAmplifiableRegion().getContig());
                     output.setStartPosition(primerPair.getAmplifiableRegion().getStartPosition());
                     output.setEndPosition(primerPair.getAmplifiableRegion().getEndPosition());
                     output.setLeftSequence(primerPair.getLeftSequence());
@@ -145,7 +145,7 @@ public class Main {
                     output.setRightTm(primerPair.getRightTm());
 
                     //print primers to bed
-                    bedOutput.append(suppliedROI.getChromosome() + "\t");
+                    bedOutput.append(suppliedROI.getContig() + "\t");
                     bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1 + "\t");
                     bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()) + "\t");
                     bedOutput.append("\t");
