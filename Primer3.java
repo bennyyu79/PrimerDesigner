@@ -1,6 +1,5 @@
 package nhs.genetics.cardiff;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 
@@ -39,19 +38,30 @@ public class Primer3 {
     }
 
     public void callPrimer3(){
-
         log.log(Level.INFO, "Calling Primer3 ...");
 
         StringBuilder primer3input = new StringBuilder();
 
-        primer3input.append("SEQUENCE_TEMPLATE=" + referenceSequence.getReferenceSequence() + "\n");
-        primer3input.append("SEQUENCE_TARGET=" + (configuration.getPadding() + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1) + "\n");
-        primer3input.append("SEQUENCE_EXCLUDED_REGION=" + excludedRegions.toString() + "\n");
-        primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + configuration.getPrimerMisprimingLibrary() + "\n");
-        primer3input.append("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=" + configuration.getPrimerThermodynamicPararmetersPath() + "\n");
+        primer3input.append("SEQUENCE_TEMPLATE=");
+        primer3input.append(referenceSequence.getReferenceSequence());
+        primer3input.append("\n");
+        primer3input.append("SEQUENCE_TARGET=");
+        primer3input.append((configuration.getPadding() + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1));
+        primer3input.append("\n");
+        primer3input.append("SEQUENCE_EXCLUDED_REGION=");
+        primer3input.append(excludedRegions.toString());
+        primer3input.append("\n");
+        primer3input.append("PRIMER_MISPRIMING_LIBRARY=");
+        primer3input.append(configuration.getPrimerMisprimingLibrary());
+        primer3input.append("\n");
+        primer3input.append("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=");
+        primer3input.append(configuration.getPrimerThermodynamicPararmetersPath());
+        primer3input.append("/\n");
         primer3input.append("PRIMER_EXPLAIN_FLAG=1\n");
         primer3input.append("=");
 
+        log.log(Level.FINE, "Passing Primer3 args");
+        log.log(Level.FINE, primer3input.toString());
         try{
             ProcessBuilder exeBuilder;
 
@@ -91,8 +101,6 @@ public class Primer3 {
             }
 
         } catch (IOException e){
-            log.log(Level.SEVERE, e.toString());
-        } catch (RuntimeException e){
             log.log(Level.SEVERE, e.toString());
         } catch (InterruptedException e){
             log.log(Level.SEVERE, e.toString());

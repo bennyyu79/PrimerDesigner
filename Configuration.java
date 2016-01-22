@@ -31,6 +31,8 @@ public class Configuration {
 
     public void parseConfigurationFile() throws IOException {
 
+        log.log(Level.INFO, "Parsing config file");
+
         String line;
 
         //read config file

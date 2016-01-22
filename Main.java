@@ -73,6 +73,7 @@ public class Main {
         }
 
         //loop over final ROIs and split into amplifible amplicons
+        //todo
         for (GenomicLocation finalROI : mergedOverlappingExonicRegionsOfInterest){
 
             /*split target
@@ -152,13 +153,17 @@ public class Main {
                     output.setRightTm(primerPair.getRightTm());
 
                     //print primers to bed
-                    bedOutput.append(suppliedROI.getContig() + "\t");
-                    bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1 + "\t");
-                    bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()) + "\t");
+                    bedOutput.append(suppliedROI.getContig());
                     bedOutput.append("\t");
-                    bedOutput.append(Math.round(primerPair.getPairPenalty()) + "\t");
+                    bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1);
+                    bedOutput.append("\t");
+                    bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()));
+                    bedOutput.append("\t");
+                    bedOutput.append(Math.round(primerPair.getPairPenalty()));
+                    bedOutput.append("\t");
                     if (primerPair.getAmplifiableRegion().getStrand() == 1) bedOutput.append("+\t"); else bedOutput.append("-\t");
-                    bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - 1) + "\t");
+                    bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - 1));
+                    bedOutput.append("\t");
                     bedOutput.append(primerPair.getAmplifiableRegion().getEndPosition());
                     bedOutput.append("\n");
 

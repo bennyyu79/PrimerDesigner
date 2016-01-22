@@ -11,7 +11,6 @@ import java.util.logging.Logger;
  */
 
 public class Blast {
-
     private static final Logger log = Logger.getLogger(Blast.class.getName());
 
     public static ArrayList<GenomicLocation> callShortQueryBlast(String query, File blastnFilePath, File blastnRefPath, int maxExactMatches, double minSimilarity) throws MaxAlignmentExceededException {
@@ -54,8 +53,6 @@ public class Blast {
             }
 
         } catch (IOException e){
-            log.log(Level.SEVERE, e.toString());
-        } catch (RuntimeException e){
             log.log(Level.SEVERE, e.toString());
         } catch (InterruptedException e){
             log.log(Level.SEVERE, e.toString());

@@ -1,9 +1,6 @@
 package nhs.genetics.cardiff;
 
-import com.sun.tools.javac.jvm.Gen;
-
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -14,7 +11,6 @@ import java.util.logging.Logger;
  * Created by ml on 04/06/15.
  */
 public class BedtoolsWrapper {
-
     private static final Logger log = Logger.getLogger(BedtoolsWrapper.class.getName());
 
     public static ArrayList<String> getOverlappingFeatures(File bedtoolsFilePath, File bedFilePath, GenomicLocation lookup){
@@ -63,8 +59,6 @@ public class BedtoolsWrapper {
             }
 
         } catch (IOException e){
-            log.log(Level.SEVERE, e.toString());
-        } catch (RuntimeException e){
             log.log(Level.SEVERE, e.toString());
         } catch (InterruptedException e){
             log.log(Level.SEVERE, e.toString());
@@ -115,8 +109,6 @@ public class BedtoolsWrapper {
             }
 
         } catch (IOException e){
-            log.log(Level.SEVERE, e.toString());
-        } catch (RuntimeException e){
             log.log(Level.SEVERE, e.toString());
         } catch (InterruptedException e){
             log.log(Level.SEVERE, e.toString());
@@ -177,8 +169,6 @@ public class BedtoolsWrapper {
             }
 
         } catch (IOException e){
-            log.log(Level.SEVERE, e.toString());
-        } catch (RuntimeException e){
             log.log(Level.SEVERE, e.toString());
         } catch (InterruptedException e){
             log.log(Level.SEVERE, e.toString());
