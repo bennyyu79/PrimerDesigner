@@ -1,5 +1,6 @@
 package nhs.genetics.cardiff;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 
@@ -22,31 +23,19 @@ public class Primer3 {
     private ArrayList<String> primer3Output = new ArrayList<>();
     private StringBuilder excludedRegions = new StringBuilder();
     private HashMap<String, ArrayList<GenomicLocation>> primerAlignments = new HashMap<>();
-    private int maxPrimerDistance, padding;
-    private File primer3FilePath, primerMisprimingLibrary, primer3Settings;
     private GenomicLocation targetLocation;
-    private String primerThermodynamicPararmetersPath;
+    private Configuration configuration;
 
     //TODO: ligate M13 adapters
     //TODO: Re-calculate primer hairpin with M13 adapter
 
     public Primer3(ReferenceSequence referenceSequence,
                    GenomicLocation targetLocation,
-                   int padding,
-                   int maxPrimerDistance,
-                   File primer3FilePath,
-                   File primerMisprimingLibrary,
-                   File primer3Settings,
-                   String primerThermodynamicPararmetersPath) {
+                   Configuration configuration) {
 
         this.referenceSequence = referenceSequence;
         this.targetLocation = targetLocation;
-        this.padding = padding;
-        this.maxPrimerDistance = maxPrimerDistance;
-        this.primer3FilePath = primer3FilePath;
-        this.primerMisprimingLibrary = primerMisprimingLibrary;
-        this.primer3Settings = primer3Settings;
-        this.primerThermodynamicPararmetersPath = primerThermodynamicPararmetersPath;
+        this.configuration = configuration;
     }
 
     public void callPrimer3(){
@@ -56,27 +45,27 @@ public class Primer3 {
         StringBuilder primer3input = new StringBuilder();
 
         primer3input.append("SEQUENCE_TEMPLATE=" + referenceSequence.getReferenceSequence() + "\n");
-        primer3input.append("SEQUENCE_TARGET=" + (padding + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1) + "\n");
+        primer3input.append("SEQUENCE_TARGET=" + (configuration.getPadding() + 1) + "," + (targetLocation.getEndPosition() - targetLocation.getStartPosition() + 1) + "\n");
         primer3input.append("SEQUENCE_EXCLUDED_REGION=" + excludedRegions.toString() + "\n");
-        primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + primerMisprimingLibrary + "\n");
-        primer3input.append("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=" + primerThermodynamicPararmetersPath + "\n");
+        primer3input.append("PRIMER_MISPRIMING_LIBRARY=" + configuration.getPrimerMisprimingLibrary() + "\n");
+        primer3input.append("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=" + configuration.getPrimerThermodynamicPararmetersPath() + "\n");
         primer3input.append("PRIMER_EXPLAIN_FLAG=1\n");
         primer3input.append("=");
 
         try{
             ProcessBuilder exeBuilder;
 
-            if (Configuration.isDebug()){
+            if (configuration.isDebug()){
                 exeBuilder = new ProcessBuilder(
-                        primer3FilePath.toString(),
-                        "-p3_settings_file=" + primer3Settings.getAbsolutePath(),
+                        configuration.getPrimer3FilePath().toString(),
+                        "-p3_settings_file=" + configuration.getPrimer3Settings().getAbsolutePath(),
                         "-echo_settings_file",
                         "-format_output"
                 );
             } else {
                 exeBuilder = new ProcessBuilder(
-                        primer3FilePath.toString(),
-                        "-p3_settings_file=" + primer3Settings.getAbsolutePath(),
+                        configuration.getPrimer3FilePath().toString(),
+                        "-p3_settings_file=" + configuration.getPrimer3Settings().getAbsolutePath(),
                         "-echo_settings_file"
                 );
             }
@@ -109,8 +98,8 @@ public class Primer3 {
             log.log(Level.SEVERE, e.toString());
         }
 
-        if(Configuration.isDebug()) {
-            try(PrintWriter p = new PrintWriter(targetLocation.getChromosome() + "_" + targetLocation.getStartPosition() + "_" + targetLocation.getEndPosition() + "_primer3in.txt")){
+        if (configuration.isDebug()) {
+            try(PrintWriter p = new PrintWriter(targetLocation.getContig() + "_" + targetLocation.getStartPosition() + "_" + targetLocation.getEndPosition() + "_primer3in.txt")){
                 p.write(primer3input.toString());
             }catch (IOException e){
                 log.log(Level.SEVERE, e.getMessage());
@@ -201,11 +190,11 @@ public class Primer3 {
 
                 //blast primers if not already done
                 if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getLeftSequence())){
-                    primerAlignments.put(candidatePrimerPairs.get(j).getLeftSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getLeftSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath(), Configuration.getMaxExactMatches(), Configuration.getMinSimilarity()));
+                    primerAlignments.put(candidatePrimerPairs.get(j).getLeftSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getLeftSequence(), configuration.getBlastnFilePath(), configuration.getBlastnRefPath(), configuration.getMaxExactMatches(), configuration.getMinSimilarity()));
                 }
 
                 if (!primerAlignments.containsKey(candidatePrimerPairs.get(j).getRightSequence())){
-                    primerAlignments.put(candidatePrimerPairs.get(j).getRightSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getRightSequence(), Configuration.getBlastnFilePath(), Configuration.getBlastnRefPath(), Configuration.getMaxExactMatches(), Configuration.getMinSimilarity()));
+                    primerAlignments.put(candidatePrimerPairs.get(j).getRightSequence(), Blast.callShortQueryBlast(candidatePrimerPairs.get(j).getRightSequence(), configuration.getBlastnFilePath(), configuration.getBlastnRefPath(), configuration.getMaxExactMatches(), configuration.getMinSimilarity()));
                 }
 
             } catch (MaxAlignmentExceededException e){
@@ -218,7 +207,7 @@ public class Primer3 {
                 for (GenomicLocation rightAlignment : primerAlignments.get(candidatePrimerPairs.get(j).getRightSequence())) {
 
                     //skip alignments on different contigs
-                    if (!leftAlignment.getChromosome().equals(rightAlignment.getChromosome())) {
+                    if (!leftAlignment.getContig().equals(rightAlignment.getContig())) {
                         continue;
                     }
 
@@ -227,7 +216,7 @@ public class Primer3 {
                             leftAlignment.getStartPosition() < leftAlignment.getEndPosition() && //check orientation
                             rightAlignment.getStartPosition() > rightAlignment.getEndPosition() &&//check orientation
                             rightAlignment.getStartPosition() - leftAlignment.getStartPosition() > 0 && //check primers point towards each other
-                            rightAlignment.getStartPosition() - leftAlignment.getStartPosition() < maxPrimerDistance //check amplicon is less than maxSize;
+                            rightAlignment.getStartPosition() - leftAlignment.getStartPosition() < configuration.getMaxPrimerDistance() //check amplicon is less than maxSize;
 
                     ) {
 
@@ -238,15 +227,15 @@ public class Primer3 {
                         String[] rightPrimerOffsetAndLength = candidatePrimerPairs.get(j).getRightPosition().split(",");
 
                         if (
-                                Integer.parseInt(leftPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - padding) == leftAlignment.getStartPosition() + 1 &&
+                                Integer.parseInt(leftPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - configuration.getPadding()) == leftAlignment.getStartPosition() + 1 &&
                                 Integer.parseInt(leftPrimerOffsetAndLength[1]) == ((leftAlignment.getEndPosition() - leftAlignment.getStartPosition()) + 1) &&
-                                Integer.parseInt(rightPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - padding) == rightAlignment.getStartPosition() + 1 &&
+                                Integer.parseInt(rightPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - configuration.getPadding()) == rightAlignment.getStartPosition() + 1 &&
                                 Integer.parseInt(rightPrimerOffsetAndLength[1]) == ((rightAlignment.getStartPosition() - rightAlignment.getEndPosition()) + 1) &&
-                                targetLocation.getChromosome().equals(leftAlignment.getChromosome())) {
+                                targetLocation.getContig().equals(leftAlignment.getContig())) {
 
                             hasCorrectAlignment = true;
 
-                            GenomicLocation amplifibleRegion = new GenomicLocation(leftAlignment.getChromosome(), leftAlignment.getStartPosition() + Integer.parseInt(leftPrimerOffsetAndLength[1]), rightAlignment.getStartPosition() - Integer.parseInt(rightPrimerOffsetAndLength[1]));
+                            GenomicLocation amplifibleRegion = new GenomicLocation(leftAlignment.getContig(), leftAlignment.getStartPosition() + Integer.parseInt(leftPrimerOffsetAndLength[1]), rightAlignment.getStartPosition() - Integer.parseInt(rightPrimerOffsetAndLength[1]));
                             amplifibleRegion.setStrand(1);
 
                             candidatePrimerPairs.get(j).setAmplifiableRegion(amplifibleRegion);
@@ -257,7 +246,7 @@ public class Primer3 {
                             rightAlignment.getEndPosition() < rightAlignment.getStartPosition() && //check orientation
                             leftAlignment.getEndPosition() > leftAlignment.getStartPosition() &&//check orientation
                             leftAlignment.getEndPosition() - rightAlignment.getEndPosition() > 0 && //check primers point towards each other
-                            leftAlignment.getEndPosition() - rightAlignment.getEndPosition() < maxPrimerDistance) {//check amplicon is less than maxSize;
+                            leftAlignment.getEndPosition() - rightAlignment.getEndPosition() < configuration.getMaxPrimerDistance()) {//check amplicon is less than maxSize;
 
                         alignments++; //- strand
 
@@ -266,15 +255,15 @@ public class Primer3 {
                         String[] rightPrimerOffsetAndLength = candidatePrimerPairs.get(j).getRightPosition().split(",");
 
                         if (
-                                Integer.parseInt(leftPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - padding) == leftAlignment.getStartPosition() + 1 &&
+                                Integer.parseInt(leftPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - configuration.getPadding()) == leftAlignment.getStartPosition() + 1 &&
                                 Integer.parseInt(leftPrimerOffsetAndLength[1]) == ((leftAlignment.getEndPosition() - leftAlignment.getStartPosition()) + 1) &&
-                                Integer.parseInt(rightPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - padding) == rightAlignment.getStartPosition() + 1 &&
+                                Integer.parseInt(rightPrimerOffsetAndLength[0]) + (targetLocation.getStartPosition() - configuration.getPadding()) == rightAlignment.getStartPosition() + 1 &&
                                 Integer.parseInt(rightPrimerOffsetAndLength[1]) == ((rightAlignment.getStartPosition() - rightAlignment.getEndPosition()) + 1) &&
-                                targetLocation.getChromosome().equals(leftAlignment.getChromosome())) {
+                                targetLocation.getContig().equals(leftAlignment.getContig())) {
 
                             hasCorrectAlignment = true;
 
-                            GenomicLocation amplifibleRegion = new GenomicLocation(leftAlignment.getChromosome(), leftAlignment.getStartPosition() + Integer.parseInt(leftPrimerOffsetAndLength[1]), rightAlignment.getStartPosition() - Integer.parseInt(rightPrimerOffsetAndLength[1]));
+                            GenomicLocation amplifibleRegion = new GenomicLocation(leftAlignment.getContig(), leftAlignment.getStartPosition() + Integer.parseInt(leftPrimerOffsetAndLength[1]), rightAlignment.getStartPosition() - Integer.parseInt(rightPrimerOffsetAndLength[1]));
                             amplifibleRegion.setStrand(-1);
 
                             candidatePrimerPairs.get(j).setAmplifiableRegion(amplifibleRegion);
@@ -305,7 +294,7 @@ public class Primer3 {
 
         //get nearby dbSNP entries
         VCFFileReader vcfFile = new VCFFileReader(vcfFilePath, new File(vcfFilePath + ".idx"));
-        Iterator<VariantContext> it = vcfFile.query(targetLocation.getChromosome(), targetLocation.getStartPosition() - padding, targetLocation.getEndPosition() + padding);
+        Iterator<VariantContext> it = vcfFile.query(targetLocation.getContig(), targetLocation.getStartPosition() - configuration.getPadding(), targetLocation.getEndPosition() + configuration.getPadding());
         ArrayList<Long> sortedExcludedPositions = new ArrayList<>();
         HashSet<Long> excludedPositions = new HashSet<>();
 
@@ -319,7 +308,7 @@ public class Primer3 {
                 for (long n = poly.getStart() + 1; n < poly.getEnd() + 2; ++n){ //1-based
 
                     //exclude regions (convert from chrom to seq pos)
-                    excludedPositions.add(n - (targetLocation.getStartPosition() - padding));
+                    excludedPositions.add(n - (targetLocation.getStartPosition() - configuration.getPadding()));
 
                 }
 
@@ -334,7 +323,7 @@ public class Primer3 {
                     }
 
                     //exclude regions (convert from chrom to seq pos)
-                    excludedPositions.add(n - (targetLocation.getStartPosition() - padding));
+                    excludedPositions.add(n - (targetLocation.getStartPosition() - configuration.getPadding()));
 
                 }
 

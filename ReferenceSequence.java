@@ -42,7 +42,7 @@ public class ReferenceSequence {
         try(IndexedFastaSequenceFile refGenomeFasta = new IndexedFastaSequenceFile(fastaFilePath, refGenomeIndex)) {
 
             //get sequence
-            this.referenceSequence = new String(refGenomeFasta.getSubsequenceAt(location.getChromosome(),
+            this.referenceSequence = new String(refGenomeFasta.getSubsequenceAt(location.getContig(),
                     location.getStartPosition() - padding, location.getEndPosition() + padding).getBases(), "UTF-8");
 
             refGenomeFasta.close();

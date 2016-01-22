@@ -10,19 +10,31 @@ import java.util.logging.Logger;
 
 public class Main {
 
-    private static final double version = 0.4;
+    private static final double version = 0.5;
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
 
-        if (args.length != 3) {
-            System.err.println("Usage: <Chrom> <Start> <Stop>");
+        if (args.length != 5) {
+            System.err.println("Usage: <Chrom> <Start> <Stop> <ConfigFilePath> <OutputType>");
             System.err.println("Coordinates should be 1-based");
+            System.err.println("OutputType is JSON or BED");
             System.exit(1);
         }
 
         log.log(Level.INFO, "Primer designer v" + version);
-        if (Configuration.isDebug()) log.log(Level.INFO, "Debugging mode");
+
+        Configuration configuration = new Configuration(new File(args[3]));
+        try {
+            configuration.parseConfigurationFile();
+        } catch (IOException e){
+            log.log(Level.SEVERE, "Could not read config file: " + e.getMessage());
+            System.exit(-1);
+        }
+
+        if (configuration.isDebug()) {
+            log.log(Level.INFO, "Debugging mode");
+        }
 
         StringBuilder bedOutput = new StringBuilder();
         Output output = new Output();
@@ -36,7 +48,7 @@ public class Main {
         log.log(Level.INFO, "Designing primer pair to cover supplied region of interest " + suppliedROI.getContig() + ":" + suppliedROI.getStartPosition() + "-" + suppliedROI.getEndPosition());
 
         //find overlapping exons with ROI
-        for (String feature : BedtoolsWrapper.getOverlappingFeatures(Configuration.getBedtoolsFilePath(), Configuration.getExonsBed(), suppliedROI)){
+        for (String feature : BedtoolsWrapper.getOverlappingFeatures(configuration.getBedtoolsFilePath(), configuration.getExonsBed(), suppliedROI)){
 
             String[] fields = feature.split("\t");
             overlappingExonicRegionsOfInterest.add(new GenomicLocation(fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5])));
@@ -48,7 +60,7 @@ public class Main {
         if (overlappingExonicRegionsOfInterest.size() > 0){
 
             //merge exonic overlaps
-            for (GenomicLocation mergedOverlappingExonicROI : BedtoolsWrapper.mergeOverlappingFeatures(Configuration.getBedtoolsFilePath(), overlappingExonicRegionsOfInterest)) {
+            for (GenomicLocation mergedOverlappingExonicROI : BedtoolsWrapper.mergeOverlappingFeatures(configuration.getBedtoolsFilePath(), overlappingExonicRegionsOfInterest)) {
 
                 mergedOverlappingExonicRegionsOfInterest.add(mergedOverlappingExonicROI);
 
@@ -93,7 +105,7 @@ public class Main {
             log.log(Level.INFO, "Designing amplicon for target " + finalROI.getContig() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
 
             //get sequence
-            ReferenceSequence sequence = new ReferenceSequence(finalROI, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
+            ReferenceSequence sequence = new ReferenceSequence(finalROI, configuration.getReferenceGenomeFasta(), new File(configuration.getReferenceGenomeFasta() + ".fai"), configuration.getPadding());
             sequence.populateReferenceSequence();
 
             if (sequence.isRefAllNSites()) {
@@ -105,17 +117,12 @@ public class Main {
             Primer3 primer3 = new Primer3(
                     sequence,
                     finalROI,
-                    Configuration.getPadding(),
-                    Configuration.getMaxPrimerDistance(),
-                    Configuration.getPrimer3FilePath(),
-                    Configuration.getPrimerMisprimingLibrary(),
-                    Configuration.getPrimer3Settings(),
-                    Configuration.getPrimerThermodynamicPararmetersPath()
+                    configuration
             );
-            primer3.setExcludedRegions(Configuration.getExcludedVariants(), Configuration.getMaxIndelLength());
+            primer3.setExcludedRegions(configuration.getExcludedVariants(), configuration.getMaxIndelLength());
             primer3.callPrimer3();
 
-            if (Configuration.isDebug()){
+            if (configuration.isDebug()){
                 try (PrintWriter p = new PrintWriter(finalROI.getContig() + "_" + finalROI.getStartPosition() + "_" + finalROI.getEndPosition() + "_primer3out.txt")) {
                     for (String line : primer3.getPrimer3Output()) {
                         p.println(line);
@@ -126,7 +133,7 @@ public class Main {
                 }
             }
 
-            if (!Configuration.isDebug()){
+            if (!configuration.isDebug()){
 
                 primer3.splitPrimer3Output();
                 primer3.checkPrimerAlignments();
@@ -161,26 +168,14 @@ public class Main {
 
         }
 
-        if (!Configuration.isDebug()){
-            /*ReferenceSequence paddedSequence = new ReferenceSequence(suppliedROI, Configuration.getReferenceGenomeFasta(), new File(Configuration.getReferenceGenomeFasta() + ".fai"), Configuration.getPadding());
-            paddedSequence.populateReferenceSequence();
+        //write primers to stout
+        if (!configuration.isDebug()){
 
-            MutationSurveyorReference mutationSurveyorReference = new MutationSurveyorReference(suppliedROI, paddedSequence, Configuration.getPadding());
-            mutationSurveyorReference.writeMutationSurveyorSeqFile();*/
-        }
-
-        if (!Configuration.isDebug()){
-
-            //write output to stdout
-            System.out.print(gson.toJson(output));
-
-            /*print primer pairs to BED
-            try (PrintWriter p = new PrintWriter("Primers.bed")){
-                p.print(bedOutput.toString());
-                p.close();
-            } catch (IOException e){
-                log.log(Level.SEVERE, e.toString());
-            }*/
+            if (args[4].toUpperCase().equals("JSON")){
+                System.out.print(gson.toJson(output));
+            } else if (args[4].toUpperCase().equals("BED")){
+                System.out.println(bedOutput.toString());
+            }
 
         }
 

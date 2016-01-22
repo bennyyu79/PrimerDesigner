@@ -23,7 +23,7 @@ public class BedtoolsWrapper {
         ArrayList<String> bedtoolsOutput = new ArrayList<>();
 
         //convert target to bed record
-        targetBedInput.append(lookup.getChromosome());
+        targetBedInput.append(lookup.getContig());
         targetBedInput.append("\t");
         targetBedInput.append(lookup.getStartPosition());
         targetBedInput.append("\t");
@@ -79,7 +79,7 @@ public class BedtoolsWrapper {
         StringBuilder bedFeaturesToMerge = new StringBuilder();
 
         for (GenomicLocation loc : features){
-            bedFeaturesToMerge.append(loc.getChromosome());
+            bedFeaturesToMerge.append(loc.getContig());
             bedFeaturesToMerge.append("\t");
             bedFeaturesToMerge.append(loc.getStartPosition());
             bedFeaturesToMerge.append("\t");
@@ -138,7 +138,7 @@ public class BedtoolsWrapper {
         ArrayList<String> bedtoolsOutput = new ArrayList<>();
 
         //convert target to bed record
-        targetBedInput.append(regionOfInterest.getChromosome());
+        targetBedInput.append(regionOfInterest.getContig());
         targetBedInput.append("\t");
         targetBedInput.append(regionOfInterest.getStartPosition());
         targetBedInput.append("\t");

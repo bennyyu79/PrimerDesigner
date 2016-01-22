@@ -23,9 +23,9 @@ public class MutationSurveyorReference {
 
     public void writeMutationSurveyorSeqFile(){
 
-        try(PrintWriter printWriter = new PrintWriter(roi.getChromosome() + "_" + roi.getStartPosition() + "_" + roi.getEndPosition() + ".seq")){
+        try(PrintWriter printWriter = new PrintWriter(roi.getContig() + "_" + roi.getStartPosition() + "_" + roi.getEndPosition() + ".seq")){
 
-            printWriter.println("/Gene = \"GRCh37:" + roi.getChromosome() + ":" + roi.getStartPosition()  + "-" + roi.getEndPosition() + "\";");
+            printWriter.println("/Gene = \"GRCh37:" + roi.getContig() + ":" + roi.getStartPosition()  + "-" + roi.getEndPosition() + "\";");
             printWriter.println("/Exon_And_Note = \"\";");
             printWriter.println("/Reading Frame (1,2,3) = 1;");
             printWriter.println("/transl_table = ;");

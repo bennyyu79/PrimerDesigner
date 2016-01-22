@@ -1,0 +1,11 @@
+primer3FilePath=/share/apps/primer3-distros/release-2.3.6/primer3_core
+blastnFilePath=/usr/local/ncbi/blast/bin/blastn
+bedtoolsFilePath=/share/apps/bedtools-distros/bedtools2/bin/bedtools
+exonsBed=/Users/ml/Documents/Projects/PrimerDesigner/Homo_sapiens.GRCh37.75_cds_20bpFlank.bed
+blastnRefPath=/data/db/human/gatk/2.8/b37/human_g1k_v37.fasta
+referenceGenomeFasta=/data/db/human/gatk/2.8/b37/human_g1k_v37.fasta
+primerDatabaseFile=/Users/ml/Documents/Projects/PrimerDesigner/amplicons.bed
+excludedVariants=/data/db/human/gatk/2.8/b37/dbsnp_138.b37.vcf
+primerMisprimingLibrary=/Users/ml/Documents/Projects/PrimerDesigner/humrep_and_simple.txt
+primer3Settings=/Users/ml/Documents/Projects/PrimerDesigner/primer3_settings.txt
+primerThermodynamicPararmetersPath=/share/apps/primer3-distros/release-2.3.6/primer3_config

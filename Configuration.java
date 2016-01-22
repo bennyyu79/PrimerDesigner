@@ -1,6 +1,9 @@
 package nhs.genetics.cardiff;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.MalformedInputException;
+import java.util.MissingFormatArgumentException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -8,85 +11,124 @@ import java.util.logging.Logger;
  */
 public class Configuration {
 
-    private static final Logger log = Logger.getLogger(Configuration.class.getName());
+    private final Logger log = Logger.getLogger(Configuration.class.getName());
+    private File configurationPath;
 
     //parameters
-    private static final int maxTargetLength = 450; //maximum sequence length to attempt a primer design before splitting
-    private static final int maxPrimerDistance = 5000; //maxmimum distance between two blastn alignements to consider a viable amplicon
-    private static final int padding = 350; //extra reference sequence surrounding target
-    private static final int maxIndelLength = 10; //maximum length of an indel to be excluded
-    private static final int maxExactMatches = 1;
-    private static final double minSimilarity = 0.95;
+    private int maxTargetLength = 450; //maximum sequence length to attempt a primer design before splitting
+    private int maxPrimerDistance = 5000; //maxmimum distance between two blastn alignements to consider a viable amplicon
+    private int padding = 350; //extra reference sequence surrounding target
+    private int maxIndelLength = 10; //maximum length of an indel to be excluded
+    private int maxExactMatches = 1;
+    private double minSimilarity = 0.95;
+    private boolean debug = false;
 
-    //exe paths
-    private static final File primer3FilePath = new File("/share/apps/primer3-distros/release-2.3.6/primer3_core");
-    private static final File blastnFilePath = new File("/usr/local/ncbi/blast/bin/blastn");
-    private static final File bedtoolsFilePath = new File("/share/apps/bedtools-distros/bedtools2/bin/bedtools");
+    private File exonsBed, blastnRefPath, referenceGenomeFasta, primerDatabaseFile, excludedVariants, primerMisprimingLibrary, primer3Settings, primer3FilePath, blastnFilePath, bedtoolsFilePath, primerThermodynamicPararmetersPath;
 
-    //references
-    private static final File exonsBed = new File("/Users/ml/Documents/Projects/PrimerDesigner/Homo_sapiens.GRCh37.75_cds_20bpFlank.bed");
-    private static final File blastnRefPath = new File("/data/db/human/gatk/2.8/b37/human_g1k_v37.fasta");
-    private static final File referenceGenomeFasta = new File("/data/db/human/gatk/2.8/b37/human_g1k_v37.fasta");
-    private static final File primerDatabaseFile = new File("/Users/ml/Documents/Projects/PrimerDesigner/amplicons.bed");
-    private static final File excludedVariants = new File("/data/db/human/gatk/2.8/b37/dbsnp_138.b37.vcf");
-    private static final File primerMisprimingLibrary = new File("/Users/ml/Documents/Projects/PrimerDesigner/humrep_and_simple.txt");
-    private static final File primer3Settings = new File("/Users/ml/Documents/Projects/PrimerDesigner/primer3_settings.txt");
-    private static final String primerThermodynamicPararmetersPath = "/share/apps/primer3-distros/release-2.3.6/primer3_config/";
+    public Configuration(File configurationPath) {
+        this.configurationPath = configurationPath;
+    }
 
-    private static final boolean debug = false;
+    public void parseConfigurationFile() throws IOException {
 
-    public static int getMaxPrimerDistance() {
-        return maxPrimerDistance;
+        String line;
+
+        //read config file
+        try (BufferedReader reader = new BufferedReader(new FileReader(configurationPath))){
+
+            while ((line = reader.readLine()) != null) {
+
+                if (!line.equals("")) {
+                    String[] fields = line.split("=");
+
+                    if (fields[0].equals("exonsBed")){
+                        exonsBed = new File(fields[1]);
+                    } else if (fields[0].equals("blastnRefPath")){
+                        blastnRefPath = new File(fields[1]);
+                    } else if (fields[0].equals("referenceGenomeFasta")){
+                        referenceGenomeFasta = new File(fields[1]);
+                    } else if (fields[0].equals("primerDatabaseFile")){
+                        primerDatabaseFile = new File(fields[1]);
+                    } else if (fields[0].equals("excludedVariants")){
+                        excludedVariants = new File(fields[1]);
+                    } else if (fields[0].equals("primerMisprimingLibrary")){
+                        primerMisprimingLibrary = new File(fields[1]);
+                    } else if (fields[0].equals("primer3Settings")){
+                        primer3Settings = new File(fields[1]);
+                    } else if (fields[0].equals("primer3FilePath")){
+                        primer3FilePath = new File(fields[1]);
+                    } else if (fields[0].equals("blastnFilePath")){
+                        blastnFilePath = new File(fields[1]);
+                    } else if (fields[0].equals("bedtoolsFilePath")){
+                        bedtoolsFilePath = new File(fields[1]);
+                    } else if (fields[0].equals("primerThermodynamicPararmetersPath")){
+                        primerThermodynamicPararmetersPath = new File(fields[1]);
+                    }
+
+                }
+
+            }
+
+            reader.close();
+        } catch (NullPointerException e){
+            throw new IllegalArgumentException("Config file malformed");
+        }
+
     }
-    public static int getPadding() {
-        return padding;
-    }
-    public static File getPrimer3FilePath() {
-        return primer3FilePath;
-    }
-    public static File getBlastnFilePath() {
-        return blastnFilePath;
-    }
-    public static File getBlastnRefPath() {
-        return blastnRefPath;
-    }
-    public static File getBedtoolsFilePath() {
-        return bedtoolsFilePath;
-    }
-    public static int getMaxTargetLength() {
+
+    public int getMaxTargetLength() {
         return maxTargetLength;
     }
-    public static File getPrimerDatabaseFile() {
-        return primerDatabaseFile;
+    public int getMaxPrimerDistance() {
+        return maxPrimerDistance;
     }
-    public static int getMaxIndelLength(){
-        return  maxIndelLength;
+    public int getPadding() {
+        return padding;
     }
-    public static boolean isDebug() {
-        return debug;
+    public int getMaxIndelLength() {
+        return maxIndelLength;
     }
-    public static File getReferenceGenomeFasta() {
-        return referenceGenomeFasta;
-    }
-    public static File getExcludedVariants() {
-        return excludedVariants;
-    }
-    public static File getExonsBed() {
-        return exonsBed;
-    }
-    public static File getPrimerMisprimingLibrary() {
-        return primerMisprimingLibrary;
-    }
-    public static File getPrimer3Settings() {
-        return primer3Settings;
-    }
-    public static String getPrimerThermodynamicPararmetersPath() {
-        return primerThermodynamicPararmetersPath;
-    }
-    public static int getMaxExactMatches() {
+    public int getMaxExactMatches() {
         return maxExactMatches;
     }
-    public static double getMinSimilarity() {
+    public double getMinSimilarity() {
         return minSimilarity;
     }
+    public boolean isDebug() {
+        return debug;
+    }
+    public File getExonsBed() {
+        return exonsBed;
+    }
+    public File getBlastnRefPath() {
+        return blastnRefPath;
+    }
+    public File getReferenceGenomeFasta() {
+        return referenceGenomeFasta;
+    }
+    public File getPrimerDatabaseFile() {
+        return primerDatabaseFile;
+    }
+    public File getExcludedVariants() {
+        return excludedVariants;
+    }
+    public File getPrimerMisprimingLibrary() {
+        return primerMisprimingLibrary;
+    }
+    public File getPrimer3Settings() {
+        return primer3Settings;
+    }
+    public File getPrimer3FilePath() {
+        return primer3FilePath;
+    }
+    public File getBlastnFilePath() {
+        return blastnFilePath;
+    }
+    public File getBedtoolsFilePath() {
+        return bedtoolsFilePath;
+    }
+    public File getPrimerThermodynamicPararmetersPath() {
+        return primerThermodynamicPararmetersPath;
+    }
+
 }
