@@ -1,4 +1,4 @@
-primer3FilePath=/Users/ml/Downloads/primer3-2.3.6/src/primer3_core
+primer3FilePath=/share/apps/primer3-distros/release-2.3.6/primer3_core
 blastnFilePath=/usr/local/ncbi/blast/bin/blastn
 bedtoolsFilePath=/share/apps/bedtools-distros/bedtools2/bin/bedtools
 exonsBed=/Users/ml/Documents/Projects/PrimerDesigner/Homo_sapiens.GRCh37.75_cds_20bpFlank.bed

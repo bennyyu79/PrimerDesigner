@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class Main {
 
-    private static final double version = 0.5;
+    private static final double version = 0.6;
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
