@@ -109,6 +109,10 @@ public class Main {
             ReferenceSequence sequence = new ReferenceSequence(finalROI, configuration.getReferenceGenomeFasta(), new File(configuration.getReferenceGenomeFasta() + ".fai"), configuration.getPadding());
             sequence.populateReferenceSequence();
 
+            if (configuration.isDebug()) {
+                log.log(Level.INFO, "Reference: " + sequence.getReferenceSequence());
+            }
+
             if (sequence.isRefAllNSites()) {
                 log.log(Level.WARNING, "Could not design primer for target containing all N-sites: " + finalROI.getContig() + ":" + finalROI.getStartPosition() + "-" + finalROI.getEndPosition());
                 break;

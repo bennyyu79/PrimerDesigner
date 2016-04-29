@@ -42,11 +42,10 @@ public class ReferenceSequence {
         try(IndexedFastaSequenceFile refGenomeFasta = new IndexedFastaSequenceFile(fastaFilePath, refGenomeIndex)) {
 
             //get sequence
-            this.referenceSequence = new String(refGenomeFasta.getSubsequenceAt(location.getContig(),
-                    location.getStartPosition() - padding, location.getEndPosition() + padding).getBases(), "UTF-8");
+            byte[] bytes = refGenomeFasta.getSubsequenceAt(location.getContig(), location.getStartPosition() - padding, location.getEndPosition() + padding).getBases();
+            referenceSequence = new String(bytes, "UTF-8");
 
             refGenomeFasta.close();
-
         } catch (UnsupportedEncodingException e){
             log.log(Level.SEVERE, "Problem converting nucleotide sequence: " + e.toString());
         } catch(IOException e){
