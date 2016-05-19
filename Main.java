@@ -162,7 +162,7 @@ public class Main {
                     bedOutput.append((primerPair.getAmplifiableRegion().getStartPosition() - primerPair.getLeftSequence().length()) - 1);
                     bedOutput.append("\t");
                     bedOutput.append((primerPair.getAmplifiableRegion().getEndPosition() + primerPair.getRightSequence().length()));
-                    bedOutput.append("\t");
+                    bedOutput.append("\tamplicon\t");
                     bedOutput.append(Math.round(primerPair.getPairPenalty()));
                     bedOutput.append("\t");
                     if (primerPair.getAmplifiableRegion().getStrand() == 1) bedOutput.append("+\t"); else bedOutput.append("-\t");
