@@ -5,7 +5,11 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 04/06/15.
+ * Placeholder for linking primer output to database
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-06-04
  */
 public class PrimerDatabase { //TODO: link to actual primer database: placeholder
 

@@ -7,7 +7,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 27/04/15.
+ * A wrapper for running BLAST executable https://blast.ncbi.nlm.nih.gov
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-27
  */
 
 public class Blast {

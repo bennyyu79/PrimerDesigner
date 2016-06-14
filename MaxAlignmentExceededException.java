@@ -1,7 +1,11 @@
 package nhs.genetics.cardiff;
 
 /**
- * Created by ml on 15/07/2015.
+ * Exception for primers with too many genome alignments
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-06-15
  */
 
 class MaxAlignmentExceededException extends Exception

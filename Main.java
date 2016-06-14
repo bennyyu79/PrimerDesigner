@@ -8,9 +8,16 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A programme for designing PCR primers around a given chromosomal target.
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-27
+ */
 public class Main {
 
-    private static final double version = 0.6;
+    private static final String version = "1.0.6";
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {

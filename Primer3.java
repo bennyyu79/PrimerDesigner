@@ -10,7 +10,11 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Created by ml on 17/04/15.
+ * Primer3 wrapper. Call to design primers around a target
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-17
  */
 public class Primer3 {
 

@@ -7,7 +7,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 26/05/15.
+ * Program configuration class
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-05-26
  */
 public class Configuration {
 

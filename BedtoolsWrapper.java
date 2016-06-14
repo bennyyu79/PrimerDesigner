@@ -8,7 +8,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 04/06/15.
+ * A class for running bedtools functions http://bedtools.readthedocs.io/en/latest
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-06-04
  */
 public class BedtoolsWrapper {
     private static final Logger log = Logger.getLogger(BedtoolsWrapper.class.getName());

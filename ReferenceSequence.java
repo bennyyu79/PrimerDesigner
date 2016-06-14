@@ -10,7 +10,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 21/04/15.
+ * Wrapper around htsjdk fasta functions. Extracts target from an indexed file.
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-21
  */
 public class ReferenceSequence {
 

@@ -6,7 +6,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 20/04/15.
+ * Class for creating mutation surveyor reference files with 'pink bars' around target
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-20
  */
 //todo
 public class MutationSurveyorReference {
