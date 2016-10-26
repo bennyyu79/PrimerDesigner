@@ -2,6 +2,7 @@ package nhs.genetics.cardiff;
 
 import htsjdk.samtools.reference.FastaSequenceIndex;
 import htsjdk.samtools.reference.IndexedFastaSequenceFile;
+import nhs.genetics.cardiff.framework.GenomicLocation;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,5 +72,8 @@ public class ReferenceSequence {
 
     public String getReferenceSequence() {
         return referenceSequence;
+    }
+    public int getLength(){
+        return referenceSequence.length();
     }
 }
